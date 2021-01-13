@@ -30,7 +30,10 @@ var defaultLetterColor = color.RGBA{0xf0, 0xf0, 0xf0, 0xf0}
 
 // Draw generates a new letter-avatar image of the given size using the given letter
 // with the given options. Default parameters are used if a nil *Options is passed.
-func Draw(size int, letter rune, options *Options) (image.Image, error) {
+func Draw(size int, letters []rune, options *Options) (image.Image, error) {
+	if len(letters) > 2 {
+		letters = letters[0:2]
+	}
 	font := defaultFont
 	if options != nil && options.Font != nil {
 		font = options.Font
@@ -55,14 +58,20 @@ func Draw(size int, letter rune, options *Options) (image.Image, error) {
 		}
 	}
 
-	return drawAvatar(bgColor, letterColor, font, size, letter)
+	return drawAvatar(bgColor, letterColor, font, size, letters)
 }
 
-func drawAvatar(bgColor, fgColor color.Color, font *truetype.Font, size int, letter rune) (image.Image, error) {
+func drawAvatar(bgColor, fgColor color.Color, font *truetype.Font, size int, letters []rune) (image.Image, error) {
 	dst := newRGBA(size, size, bgColor)
 
-	fontSize := float64(size) * 0.6
-	src, err := drawString(bgColor, fgColor, font, fontSize, string(letter))
+	var fontSize float64
+	if len(letters) == 1 {
+		fontSize = float64(size) * 0.6
+	} else {
+		fontSize = float64(size) * 0.4
+	}
+
+	src, err := drawString(bgColor, fgColor, font, fontSize, letters)
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +82,16 @@ func drawAvatar(bgColor, fgColor color.Color, font *truetype.Font, size int, let
 	return dst, nil
 }
 
-func drawString(bgColor, fgColor color.Color, font *truetype.Font, fontSize float64, str string) (image.Image, error) {
+func drawString(bgColor, fgColor color.Color, font *truetype.Font, fontSize float64, letters []rune) (image.Image, error) {
+	str := string(letters)
 	c := freetype.NewContext()
 	c.SetDPI(72)
 
 	bb := font.Bounds(c.PointToFixed(fontSize))
-	w := bb.Max.X.Ceil() - bb.Min.X.Floor()
+	w := (bb.Max.X.Ceil() - bb.Min.X.Floor())
+	if len(letters) == 2 {
+		w = w * 2
+	}
 	h := bb.Max.Y.Ceil() - bb.Min.Y.Floor()
 
 	dst := newRGBA(w, h, bgColor)
