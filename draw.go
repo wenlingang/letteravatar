@@ -30,7 +30,7 @@ var defaultLetterColor = color.RGBA{0xf0, 0xf0, 0xf0, 0xf0}
 
 // Draw generates a new letter-avatar image of the given size using the given letter
 // with the given options. Default parameters are used if a nil *Options is passed.
-func Draw(size int, letters []rune, options *Options) (image.Image, error) {
+func Draw(width int, height int, letters []rune, options *Options) (image.Image, error) {
 	if len(letters) > 2 {
 		letters = letters[0:2]
 	}
@@ -58,17 +58,17 @@ func Draw(size int, letters []rune, options *Options) (image.Image, error) {
 		}
 	}
 
-	return drawAvatar(bgColor, letterColor, font, size, letters)
+	return drawAvatar(bgColor, letterColor, font, width, height, letters)
 }
 
-func drawAvatar(bgColor, fgColor color.Color, font *truetype.Font, size int, letters []rune) (image.Image, error) {
-	dst := newRGBA(size, size, bgColor)
+func drawAvatar(bgColor, fgColor color.Color, font *truetype.Font, width int, height int, letters []rune) (image.Image, error) {
+	dst := newRGBA(width, height, bgColor)
 
 	var fontSize float64
 	if len(letters) == 1 {
-		fontSize = float64(size) * 0.6
+		fontSize = float64(width) * 0.6
 	} else {
-		fontSize = float64(size) * 0.4
+		fontSize = float64(width) * 0.4
 	}
 
 	src, err := drawString(bgColor, fgColor, font, fontSize, letters)
